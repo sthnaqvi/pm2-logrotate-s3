@@ -1,33 +1,35 @@
 {
-  "name": "pm2-logrotate",
-  "version": "2.7.0",
-  "description": "Module to rotate logs of every pm2 application",
+  "name": "pm2-logrotate-s3",
+  "version": "3.0.0",
+  "description": "Module to rotate logs of every pm2 application and also upload to s3",
   "main": "app.js",
   "dependencies": {
-    "graceful-fs": "^4.2.2",
-    "moment-timezone": "^0.5.11",
-    "node-schedule": "^1.3.1",
+    "deep-extend": "^0.6.0",
+    "graceful-fs": "^4.2.3",
+    "moment-timezone": "^0.5.27",
+    "node-schedule": "^1.3.2",
     "pm2": "latest",
-    "pmx": "latest"
+    "pmx": "latest",
+    "public-ip": "^4.0.0",
+    "s3": "^4.4.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Joni SHKURTI",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pm2-hive/pm2-logrotate.git"
+    "url": "git+https://github.com/sthnaqvi/pm2-logrotate-s3.git"
   },
   "bugs": {
-    "url": "https://github.com/pm2-hive/pm2-logrotate/issues"
+    "url": "https://github.com/sthnaqvi/pm2-logrotate-s3/issues"
   },
-  "homepage": "https://github.com/pm2-hive/pm2-logrotate",
+  "homepage": "https://github.com/sthnaqvi/pm2-logrotate-s3",
   "license": "MIT",
   "apps": [
     {
-      "name": "pm2-logrotate",
+      "name": "pm2-logrotate-s3",
       "script": "app.js",
-      "max_memory_restart" : "500M"
+      "max_memory_restart": "500M"
     }
   ],
   "config": {
@@ -38,5 +40,22 @@
     "workerInterval": "30",
     "rotateInterval": "0 0 * * *",
     "rotateModule": true
-  }
+  },
+  "keywords": [
+    "pm2",
+    "logs",
+    "rotate",
+    "logrotate",
+    "upload",
+    "put",
+    "s3",
+    "aws",
+    "bucket",
+    "delete",
+    "local",
+    "node js",
+    "node",
+    "js",
+    "process manager"
+  ]
 }

@@ -5,3 +5,5 @@ node_modules
 test/child
 *.iml
 .idea/**
+pm2-logrotate-s3-config.json
+.vscode/*

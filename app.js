@@ -1,15 +1,18 @@
-var fs      	= require('graceful-fs');
-var path    	= require('path');
-var pmx     	= require('pmx');
-var pm2     	= require('pm2');
-var moment  	= require('moment-timezone');
-var scheduler	= require('node-schedule');
-var zlib      = require('zlib');
+const fs      	= require('graceful-fs');
+const path    	= require('path');
+const pmx     	= require('pmx');
+const pm2     	= require('pm2');
+const moment  	= require('moment-timezone');
+const scheduler	= require('node-schedule');
+const zlib      = require('zlib');
+const deepExtend = require('deep-extend');	
+const publicIp = require('public-ip');
+const s3 = require('s3');
 
 var conf = pmx.initModule({
   widget : {
     type             : 'generic',
-    logo             : 'https://raw.githubusercontent.com/pm2-hive/pm2-logrotate/master/pres/logo.png',
+    logo             : 'https://raw.githubusercontent.com/sthnaqvi/pm2-logrotate-s3/master/pres/logo.png',
     theme            : ['#111111', '#1B2228', '#31C2F1', '#807C7C'],
     el : {
       probes  : false,
@@ -27,6 +30,7 @@ var conf = pmx.initModule({
 
 var PM2_ROOT_PATH = '';
 var Probe = pmx.probe();
+var SERVER_PUBLIC_IP;
 
 if (process.env.PM2_HOME)
   PM2_ROOT_PATH = process.env.PM2_HOME;
@@ -34,6 +38,43 @@ else if (process.env.HOME && !process.env.HOMEPATH)
   PM2_ROOT_PATH = path.resolve(process.env.HOME, '.pm2');
 else if (process.env.HOME || process.env.HOMEPATH)
   PM2_ROOT_PATH = path.resolve(process.env.HOMEDRIVE, process.env.HOME || process.env.HOMEPATH, '.pm2');
+
+try {
+  var customConfig = require(path.resolve(PM2_ROOT_PATH, 'pm2-logrotate-s3-config.json'));
+  conf = deepExtend(conf, customConfig);
+} catch (error) {
+  console.error('deepExtend pm2-logrotate-s3-config.json ERROR: ', error);
+}
+
+if (process.env.SERVER_PUBLIC_IP && typeof process.env.SERVER_PUBLIC_IP === 'string') {
+  SERVER_PUBLIC_IP = process.env.SERVER_PUBLIC_IP;
+  console.log('ENV SERVER_PUBLIC_IP: ', SERVER_PUBLIC_IP);
+} else if (conf && conf.serverIp) {
+  SERVER_PUBLIC_IP = conf.serverIp;
+  console.log('CONF SERVER_PUBLIC_IP: ', SERVER_PUBLIC_IP);
+} else if (conf && conf.getServerPublicIp) {
+  publicIp.v4().then(ip => {
+    SERVER_PUBLIC_IP = ip;
+    console.log('publicIp module SERVER_PUBLIC_IP: ', ip);
+  }).catch(error => {
+    console.error('Get Public IP CALL ERROR: ', error);
+  });
+}
+
+if (!conf.logBucketSetting || !conf.logBucketSetting.bucket || !conf.logBucketSetting.s3Path) {
+  return console.error('Not found logBucketSetting --> pm2-logrotate-s3-config.json in PM2 home folder');
+}
+
+if (!conf.aws || !conf.aws.credentials || !conf.aws.credentials.accessKeyId || !conf.aws.credentials.secretAccessKey) {
+  return console.error('Not found aws credentials --> pm2-logrotate-s3-config.json in PM2 home folder');
+}
+
+const s3client = s3.createClient({
+  s3Options: {
+    accessKeyId: conf.aws.credentials.accessKeyId,
+    secretAccessKey: conf.aws.credentials.secretAccessKey,
+  },
+});
 
 var WORKER_INTERVAL = isNaN(parseInt(conf.workerInterval)) ? 30 * 1000 : 
                             parseInt(conf.workerInterval) * 1000; // default: 30 secs
@@ -60,7 +101,20 @@ function get_limit_size() {
   return parseInt(conf.max_size);
 }
 
-function delete_old(file) {
+const putFileToS3 = (local_file_path, s3_file_path, s3_bucket) => new Promise((resolve, reject) => {
+  const params = {
+    localFile: local_file_path,
+    s3Params: {
+      Bucket: s3_bucket,
+      Key: s3_file_path
+    }
+  };
+  const uploader = s3client.uploadFile(params);
+  uploader.on('error', error => reject(error));
+  uploader.on('end', () => resolve(''));
+});
+
+function putOldFileToS3AndDeletedFromLocal(file) {
   if (file === "/dev/null") return;
   var fileBaseName = file.substr(0, file.length - 4).split('/').pop() + "__";
   var dirName = path.dirname(file);
@@ -78,10 +132,26 @@ function delete_old(file) {
 
     for (i = rotated_files.length - 1; i >= RETAIN; i--) {
       (function(i) {
-        fs.unlink(path.resolve(dirName, rotated_files[i]), function (err) {
-          if (err) return console.error(err);
-          console.log('"' + rotated_files[i] + '" has been deleted');
-        });
+        const local_file_path = path.resolve(dirName, rotated_files[i]);
+        const moment_date = moment();
+        const s3_file_path = `${conf.logBucketSetting.s3Path}/${(conf.logBucketSetting.s3FilePathFormat || '__filename__')
+          .replace(/__ip__/, SERVER_PUBLIC_IP || '')
+          .replace(/__year__/, moment_date.format('YYYY'))
+          .replace(/__month__/, moment_date.format('MMM'))
+          .replace(/__day__/, moment_date.format('DD'))
+          .replace(/__filename__/, rotated_files[i])
+          .replace(/__epoch__/, moment_date.toDate().getTime())
+          }`;
+        console.log('S3 File Path: ', s3_file_path);
+        putFileToS3(local_file_path, s3_file_path, conf.logBucketSetting.bucket)
+          .then(() => {
+            fs.unlink(local_file_path, function (err) {
+              if (err) return console.error(err);
+              console.log('"' + rotated_files[i] + '" has been deleted');
+            });
+          }).catch((error) => {
+            console.error(JSON.stringify(error));
+          })
       })(i);
     }
   });
@@ -141,7 +211,7 @@ function proceed(file) {
       console.log('"' + final_name + '" has been created');
 
       if (typeof(RETAIN) === 'number') 
-        delete_old(file);
+        putOldFileToS3AndDeletedFromLocal(file);
     });
   });
 }
