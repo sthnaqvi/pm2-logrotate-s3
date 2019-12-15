@@ -7,3 +7,7 @@
 # 3.0.0
 
 - Upload logs to s3 bucket
+
+# 3.0.1
+
+- fix max_size default input example from MB to M

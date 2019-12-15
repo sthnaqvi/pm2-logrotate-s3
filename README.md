@@ -16,7 +16,7 @@ set config values as given in example below:
 
 ```javascript
 module.exports = {
-                    "max_size": "10MB",
+                    "max_size": "10M",
                     "retain": "2",
                     "compress": true,
                     "dateFormat": "YYYY-MM-DD_HH-mm-ss",
@@ -53,7 +53,7 @@ One of two properties should be set for this to work.
 - `serverIp` (Defaults to `null`): This is the static value of ip of server that needed to be passed.
 
 #### PM2 log rotate properties
-- `max_size` (Defaults to `10MB`): When a file size becomes higher than this value it will rotate it (its possible that the worker check the file after it actually pass the limit) . You can specify the unit at then end: `10G`, `10M`, `10K`
+- `max_size` (Defaults to `10M`): When a file size becomes higher than this value it will rotate it (its possible that the worker check the file after it actually pass the limit) . You can specify the unit at then end: `10G`, `10M`, `10K`
 - `retain` (Defaults to `all`): This number is the number of rotated logs that are keep at any one time, it means that if you have retain = 7 you will have at most 7 rotated logs and your current one.
 - `compress` (Defaults to `false`): Enable compression via gzip for all rotated logs
 - `dateFormat` (Defaults to `YYYY-MM-DD_HH-mm-ss`) : Format of the data used the name the file of log
