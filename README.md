@@ -1,3 +1,13 @@
+# pm2-logrotate-s3
+
+[![NPM](https://nodei.co/npm/pm2-logrotate-s3.png)](https://nodei.co/npm/pm2-logrotate-s3/)
+
+[![npm version](https://badge.fury.io/js/pm2-logrotate-s3.png)](https://badge.fury.io/js/pm2-logrotate-s3)
+[![Build Status](https://img.shields.io/travis/sthnaqvi/pm2-logrotate-s3.svg?style=flat-square)](https://travis-ci.org/sthnaqvi/pm2-logrotate-s3)
+[![Coverage](https://img.shields.io/codecov/c/github/sthnaqvi/pm2-logrotate-s3.svg?style=flat-square)](https://codecov.io/github/sthnaqvi/pm2-logrotate-s3)
+[![Dependency Status](https://img.shields.io/david/sthnaqvi/pm2-logrotate-s3.svg?style=flat-square)](https://david-dm.org/sthnaqvi/pm2-logrotate-s3)
+[![Known npm Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/npm/pm2-logrotate-s3.svg?label=npm%20vulnerabilities&style=flat-square)](https://snyk.io/test/npm/pm2-logrotate-s3)
+[![Known Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/github/sthnaqvi/pm2-logrotate-s3.svg?label=repo%20vulnerabilities&style=flat-square&targetFile=package.json)](https://snyk.io/test/github/sthnaqvi/pm2-logrotate-s3?targetFile=package.json)
 
 ## Description
 ## [pm2-logrotate-s3](https://github.com/sthnaqvi/pm2-logrotate-s3) is based on [pm2-logrotate](https://github.com/keymetrics/pm2-logrotate)
