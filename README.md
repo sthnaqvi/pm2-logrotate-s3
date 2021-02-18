@@ -24,30 +24,30 @@ PM2 module to automatically rotate logs of processes managed by PM2 and upload t
 create pm2-logrotate-s3-config.json file in PM2 home folder which by default is ~/.pm2 .
 set config values as given in example below:
 
-```javascript
-module.exports = {
-                    "max_size": "10M",
-                    "retain": "2",
-                    "compress": true,
-                    "dateFormat": "YYYY-MM-DD_HH-mm-ss",
-                    "workerInterval": "30",
-                    "rotateInterval": "0 0 * * *",
-                    "rotateModule": true,
-                    "TZ": null,
-                    "aws": {
-                      "credentials": {
-                        "accessKeyId": "<AWS_ACCESS_KEY_ID>",
-                        "secretAccessKey": "<AWS_SECRET_ACCESS_KEY>"
-                      }
-                    },
-                    "logBucketSetting": {
-                      "bucket": "<S3_BUCKET>",
-                      "s3Path": "website-node-react",
-                      "s3FilePathFormat": "__year__/__month__/__day__/__ip__/__filename__"
-                    },
-                    "getServerPublicIp": true,
-                    "serverIp": null
-                }
+```json
+{
+  "max_size": "10M",
+  "retain": "2",
+  "compress": true,
+  "dateFormat": "YYYY-MM-DD_HH-mm-ss",
+  "workerInterval": "30",
+  "rotateInterval": "0 0 * * *",
+  "rotateModule": true,
+  "TZ": null,
+  "aws": {
+    "credentials": {
+      "accessKeyId": "<AWS_ACCESS_KEY_ID>",
+      "secretAccessKey": "<AWS_SECRET_ACCESS_KEY>"
+    }
+  },
+  "logBucketSetting": {
+    "bucket": "<S3_BUCKET>",
+    "s3Path": "website-node-react",
+    "s3FilePathFormat": "__year__/__month__/__day__/__ip__/__filename__"
+  },
+  "getServerPublicIp": true,
+  "serverIp": null
+}
 
 ```
 
