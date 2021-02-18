@@ -1,13 +1,13 @@
-const fs      	= require('graceful-fs');
-const path    	= require('path');
-const pmx     	= require('pmx');
-const pm2     	= require('pm2');
-const moment  	= require('moment-timezone');
-const scheduler	= require('node-schedule');
-const zlib      = require('zlib');
+const fs         = require('graceful-fs');
+const path       = require('path');
+const pmx        = require('pmx');
+const pm2        = require('pm2');
+const moment     = require('moment-timezone');
+const scheduler  = require('node-schedule');
+const zlib       = require('zlib');
 const deepExtend = require('deep-extend');	
-const publicIp = require('public-ip');
-const s3 = require('s3');
+const publicIp   = require('public-ip');
+const AWS        = require('aws-sdk');
 
 var conf = pmx.initModule({
   widget : {
@@ -69,11 +69,10 @@ if (!conf.aws || !conf.aws.credentials || !conf.aws.credentials.accessKeyId || !
   return console.error('Not found aws credentials --> pm2-logrotate-s3-config.json in PM2 home folder');
 }
 
-const s3client = s3.createClient({
-  s3Options: {
-    accessKeyId: conf.aws.credentials.accessKeyId,
-    secretAccessKey: conf.aws.credentials.secretAccessKey,
-  },
+const s3client = new AWS.S3({
+  apiVersion: '2006-03-01',
+  accessKeyId: conf.aws.credentials.accessKeyId,
+  secretAccessKey: conf.aws.credentials.secretAccessKey
 });
 
 var WORKER_INTERVAL = isNaN(parseInt(conf.workerInterval)) ? 30 * 1000 : 
@@ -102,16 +101,19 @@ function get_limit_size() {
 }
 
 const putFileToS3 = (local_file_path, s3_file_path, s3_bucket) => new Promise((resolve, reject) => {
-  const params = {
-    localFile: local_file_path,
-    s3Params: {
-      Bucket: s3_bucket,
-      Key: s3_file_path
-    }
+  const fileStream = fs.createReadStream(local_file_path);
+  fileStream.on('error', function(err) {
+    reject(err);
+  });
+  const uploadParams = {
+    Bucket: s3_bucket,
+    Key: s3_file_path,
+    Body: fileStream
   };
-  const uploader = s3client.uploadFile(params);
-  uploader.on('error', error => reject(error));
-  uploader.on('end', () => resolve(''));
+  s3client.upload(uploadParams, function(err, data) {
+    if (err) return reject(err);
+    resolve('');
+  });
 });
 
 function putOldFileToS3AndDeletedFromLocal(file) {
