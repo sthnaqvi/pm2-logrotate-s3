@@ -7,7 +7,7 @@ const scheduler	= require('node-schedule');
 const zlib      = require('zlib');
 const deepExtend = require('deep-extend');	
 const publicIp = require('public-ip');
-const s3 = require('s3');
+const s3 = require('s3-node');
 
 var conf = pmx.initModule({
   widget : {
