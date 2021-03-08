@@ -84,7 +84,7 @@ var RETAIN = isNaN(parseInt(conf.retain)) ? undefined : parseInt(conf.retain); /
 var COMPRESSION = JSON.parse(conf.compress) || false; // Do not compress by default
 var DATE_FORMAT = conf.dateFormat || 'YYYY-MM-DD_HH-mm-ss';
 var TZ = conf.TZ;
-var ROTATE_MODULE = JSON.parse(conf.rotateModule) || true;
+var ROTATE_MODULE = JSON.parse(conf.rotateModule) && true;
 var WATCHED_FILES = [];
 
 function get_limit_size() {
