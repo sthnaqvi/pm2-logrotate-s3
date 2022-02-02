@@ -21,11 +21,11 @@ PM2 module to automatically rotate logs of processes managed by PM2 and upload t
 **NOTE:** the command is `pm2 install` NOT `npm install`
 
 ## Configure
-create pm2-logrotate-s3-config.json file in PM2 home folder which by default is ~/.pm2 .
+create `pm2-logrotate-s3-config.json` file in PM2 home folder which by default is ~/.pm2 .
 set config values as given in example below:
 
 ```javascript
-module.exports = {
+{
                     "max_size": "10M",
                     "retain": "2",
                     "compress": true,
